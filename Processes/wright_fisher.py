@@ -6,9 +6,12 @@ import numpy as np
 # http://www.stats.ox.ac.uk/~didelot/popgen/lecture2.pdf - seems correct
 class Wright_Fisher(Model):
     def step(self):
-        new_pop = []
-        for _ in range(len(self.population)):
-            new_pop = [self.population[self.select()]]
+        self.calculate_fitness()
+
+        new_pop = np.zeros_like(self.population)
+        for _ in range(np.int(np.sum(self.population))):
+            new_pop[self.select()] += 1
+
         self.population = new_pop
 
         self.cur_step += 1

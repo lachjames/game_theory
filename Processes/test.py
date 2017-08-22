@@ -2,50 +2,43 @@ from moran import Moran
 from wright_fisher import Wright_Fisher
 import math
 
+import numpy as np
+
 num_tests = 100
-
-results = []
-
-freq = [0.5, 0.5]
-n = 250
-parameters = {
-    "n": n,
-    "freq": freq,
-    # "game": [
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)],
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)],
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)]
-    # ],
-    "game": [
-        [2, 1],
-        [1, 1]
-    ],
-    "w": 1
-}
 
 # example_moran = Moran(parameters)
 # print("Expected time: " + str(example_moran.expectation()))
 
-wins = {i: 0 for i in range(len(freq))}
+for p_name, p in ( ("Moran", Moran), ("Wright-Fisher", Wright_Fisher) ):
+    results = [0, 0]
 
-for n in range(num_tests):
-    if n % 10 == 0:
-        print(n)
-    moran = Wright_Fisher(parameters=parameters)
+    first = True
 
-    # print("Expected time taken: " + str(moran.expectation()))
+    for n in range(num_tests):
+        parameters = {
+            "game": np.array([
+                [1, 1], # We cooperate and [they cooperate, they defect]
+                [1, 1.1]  # We defect and [they cooperate, they defect]
+            ], dtype=np.float),
+            "w": 0.01,
+            "init_pop": np.array([9, 9], dtype=np.float)
+        }
+        if n % 10 == 0:
+            print(n)
 
-    winner = moran.run_to_extinction()
-    # print(moran.cur_step)
-    # print(winner)
-    wins[winner] += 1
-    results += [moran.cur_step]
+        t = p(parameters=parameters)
 
-# print(results)
-# print(np.average(results))
-# print(np.mean(results))
+        if (first and p is Moran):
+            first = False
+            print("Gamma Product", t.gamma_product())
+            print("Fixation Probability", t.invasion_probability())
+        #exit()
+        # print("Expected time taken: " + str(moran.expectation()))
 
-for x in wins:
-    wins[x] /= float(num_tests)
+        winner = t.run_to_extinction()
+        # print(moran.cur_step)
+        # print(winner)
 
-print(wins)
+        results[winner] += 1
+
+    print(p_name, "has results:", results)

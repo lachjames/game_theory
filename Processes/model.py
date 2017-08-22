@@ -1,93 +1,41 @@
 import random, math
 import numpy as np
+
 class Model:
     def __init__(self, parameters):
         self.parameters = parameters
 
-        self.n = parameters["n"]
-        self.freq = parameters["freq"]
         self.game = parameters["game"]
         self.w = parameters["w"]
 
-        self.population = []
+        self.population = parameters["init_pop"]
+        self.n = np.sum(self.population)
 
         self.cur_step = 1
 
-        for i, f in enumerate(self.freq):
-            count = int(self.n * f)
-            self.population += [i] * count
+    def calculate_fitness(self):
+        self.fitness = self._fitness(self.population)
+        return self.fitness
 
-        x = random.shuffle(self.population)
+    def _fitness(self, f_pop):
+        if self.w == 0:
+            # We don't want to end up with a divide by zero error
+            fitness = np.copy(f_pop) / self.n
+            return fitness
+        fitness = np.dot(self.game, f_pop) - np.diag(self.game)
+        fitness = np.multiply(f_pop, fitness)
+        fitness = np.exp(self.w * fitness)
+        fitness = fitness / np.sum(fitness)
+
+        return fitness
 
     def select(self):
-        payoff_dict = self.payoffs()
-        payoff_pop = []
-
-        for x in self.population:
-            payoff_pop += [payoff_dict[x]]
-
-        s = sum(payoff_pop)
-        for i in range(len(payoff_pop)):
-            payoff_pop[i] /= s
-
-        # print(payoff_pop)
-
-        # print([x for x in zip(self.population, payoff_pop)])
-        # print(probabilities)
-
-        selected = np.random.choice(range(len(self.population)), 1, p=payoff_pop)[0]
-
-        return selected
-
-    def payoffs(self):
-        cur_strategies = set(self.population)
-        # print(cur_strategies)
-        strat_count = {}
-        for strategy in cur_strategies:
-            strat_count[strategy] = len([x for x in self.population if x == strategy])
-
-        # print(strat_count)
-
-        payoffs = {}
-        for strategy in cur_strategies:
-            strategy_payoffs = [(strat_count[j] - (1 if strategy == j else 0)) * self.game[strategy][j] for j in
-                                cur_strategies]
-            # print("Strategy {} has payoffs {}".format(strategy, strategy_payoffs))
-            payoffs[strategy] = sum(strategy_payoffs) / float(len(self.population))
-
-        for x in payoffs:
-            payoffs[x] = math.e ** (self.w * payoffs[x])
-
-        # print(self.population)
-        # print(payoffs)
-        # exit()
-
-        return payoffs
+        c =  np.random.choice(range(len(self.population)), size=1, replace=False, p=self.fitness)
+        #print(c)
+        return c
 
     def run_to_extinction(self):
-        while len(set(self.population)) > 1:
+        while np.count_nonzero(self.population) > 1:
             self.step()
-        return self.population[0]
-
-
-num_tests = 100
-
-results = []
-
-freq = [0.3, 0.3, 0.4]
-n = 50
-parameters = {
-    "n": n,
-    "freq": freq,
-    # "game": [
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)],
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)],
-    #	[random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)]
-    # ],
-    "game": [
-        [2, 1, 0],
-        [2, 1, 0],
-        [0, 0, 0]
-    ],
-    "w": 0
-}
+        #print("Done")
+        return bool(self.population[1])
