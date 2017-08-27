@@ -1,37 +1,57 @@
 from moran import Moran
 from wright_fisher import Wright_Fisher
-import math
+import math, random
 
 import numpy as np
 
-num_tests = 100
+num_tests = 1000
 
 # example_moran = Moran(parameters)
 # print("Expected time: " + str(example_moran.expectation()))
 
-for p_name, p in ( ("Moran", Moran), ("Wright-Fisher", Wright_Fisher) ):
+#tests = ( ("Moran", Moran), ("Wright-Fisher", Wright_Fisher) )
+#tests = ( ("Moran", Moran),)
+
+tests = ( ("Wright-Fisher", Wright_Fisher), )
+
+def rand_game(i):
+    return np.array(
+        [
+            [random.randint(-i, i), random.randint(-i, i)],
+            [random.randint(-i, i), random.randint(-i, i)]
+        ]
+    )
+
+for p_name, p in tests:
     results = [0, 0]
 
     first = True
+    game = rand_game(5)
+    print
 
     for n in range(num_tests):
+        #game = np.array([[2, 0],[3, 1]], dtype=np.float)
         parameters = {
-            "game": np.array([
-                [1, 1], # We cooperate and [they cooperate, they defect]
-                [1, 1.1]  # We defect and [they cooperate, they defect]
-            ], dtype=np.float),
-            "w": 0.01,
-            "init_pop": np.array([9, 9], dtype=np.float)
+            "game": game,
+            "w": 0.1,
+            "init_pop": np.array([3, 1], dtype=np.float)
         }
-        if n % 10 == 0:
+
+        if n % 100 == 0:
             print(n)
 
         t = p(parameters=parameters)
+
+        #t.test_canonical_form()
+        #exit()
 
         if (first and p is Moran):
             first = False
             print("Gamma Product", t.gamma_product())
             print("Fixation Probability", t.invasion_probability())
+        if (first and p is Wright_Fisher):
+            first = False
+            print("Invasion Probability:", t.invasion_probability())
         #exit()
         # print("Expected time taken: " + str(moran.expectation()))
 

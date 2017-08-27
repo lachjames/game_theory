@@ -8,7 +8,7 @@ class Moran(Model):
         self.calculate_fitness()
 
         a = self.select()
-
+        
         proportions = self.population / np.sum(self.population)
         b = np.random.choice(range(len(self.population)), size=1, replace=False, p=proportions)
 
@@ -31,7 +31,7 @@ class Moran(Model):
 
     def sum_prod(self, a, g):
         s = 0
-        for k in range(1, int(a)): #(1, a-1) really
+        for k in range(1, int(a)+1): #(1, a-1) really
             p = 1
             for j in range(1, k+1): #(1, k) really
                 p *= g[j]
@@ -50,11 +50,11 @@ class Moran(Model):
 
             # The probability that, with x invaders in the population, we will lose an invader
             # - that is, the probability that we choose the non-invader (f[0]) to kill an invader (x / (self.n - 1))
-            pr_loss = f[0] * (num_invaders / (self.n - 1))
+            pr_loss = f[0] * (num_invaders / self.n)
 
             # The probability that, with x invaders in the population, we will lose a non-invader
             # - that is, the probability that we choose the invader (f[1]) to kill a non-invader ((n - x) / (self.n - 1))
-            pr_gain = f[1] * (num_others / (self.n - 1)) #The probability that, with x invaders in the population, we will lose an invader
+            pr_gain = f[1] * (num_others / self.n) #The probability that, with x invaders in the population, we will lose an invader
 
             print(f)
 
