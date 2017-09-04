@@ -1,4 +1,4 @@
-from many import Many, random_game
+from many import Many, random_game, r
 from wright_fisher import Wright_Fisher
 from moran import Moran
 
@@ -30,4 +30,4 @@ for w, players in itertools.product(w_values, num_players):
                 }
             )
             transition_matrix, prediction = m.calculate()
-            print("For {} we predict steady state {}".format(k, prediction))
+            print("For {} we predict steady state {}".format(k, r(prediction)))

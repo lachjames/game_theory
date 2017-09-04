@@ -3,18 +3,39 @@ import numpy as np
 from moran import Moran
 from wright_fisher import Wright_Fisher
 
+def r(x):
+    return np.around(x, 3)
+
 def main():
+    r_game = random_game(3, 2, 4)
+    print(r_game)
+
+    many = Many(
+        {
+            #"game": np.asarray([
+            #    [1, 1, 1],
+            #    [1, 1, 1],
+            #    [1, 1, 1.01]
+            #]),
+            "game": r_game,
+            "w": 0.1,
+            "model_type": Wright_Fisher,
+            "initial_victor": 2,
+            "pop_size": 10
+        }
+    )
+
     transition_matrix, prediction = many.calculate()
 
     print("transition matrix:")
     print(np.around(transition_matrix, 3))
 
-    n = 5000
+    n = 10000
 
     results, scores = many.run(n / 5, n, 5)
     print(np.around(scores, 3))
     print(results)
-    print("Predicted: {}; Actual: {}".format(prediction, normalize_dict(results)))
+    print("Predicted: {}; Actual: {}".format(r(prediction), r(normalize_dict(results))))
 
 def normalize(x):
     return x / sum(x)
@@ -109,14 +130,17 @@ class Many:
         for i in range(self.num_types):
             for j in range(self.num_types):
                 if i == j:
-                    transition_matrix[i, j] = 1
+                    transition_matrix[i, j] += 1 / self.num_types
                     continue
+                
                 model = self.make_model(i, j)
                 #print("Invasion probability", model.invasion_probability())
-                transition_matrix[i, j] = model.invasion_probability()
+                pr = model.invasion_probability()
+                transition_matrix[i, j] = pr / self.num_types
+                transition_matrix[i, i] += (1 - pr) / self.num_types
 
-        for i in range(self.num_types):
-            transition_matrix[i] = normalize(transition_matrix[i])
+        #for i in range(self.num_types):
+        #    transition_matrix[i] = normalize(transition_matrix[i])
 
         w, v = np.linalg.eig(np.transpose(transition_matrix))
 
@@ -140,23 +164,5 @@ def random_game(n, a, b):
             r += [np.random.randint(a, b)]
         g += [r]
     return np.asarray(g)
-
-r_game = random_game(3, 2, 4)
-print(r_game)
-
-many = Many(
-    {
-        #"game": np.asarray([
-        #    [1, 1, 1],
-        #    [1, 1, 1],
-        #    [1, 1, 1.01]
-        #]),
-        "game": r_game,
-        "w": 0.1,
-        "model_type": Wright_Fisher,
-        "initial_victor": 2,
-        "pop_size": 10
-    }
-)
 
 if __name__ == "__main__": main()
