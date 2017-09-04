@@ -30,7 +30,14 @@ class Wright_Fisher(Model):
         return self.canonical_form(T)
 
     def invasion_probability(self):
-        return self.canonical_form(self.transition_matrix())["p"]
+        A = self.transition_matrix()
+        #print(np.around(A, 3))
+        #X = np.copy(A)
+        #for i in range(50):
+        #    print(i)
+        #    X = np.dot(X, A)
+        #    print(np.around(X, 3))
+        return self.canonical_form(A)["p"]
 
     def canonical_form(self, A):
         #Calculates the Q component of the canonical form of A
@@ -41,15 +48,15 @@ class Wright_Fisher(Model):
         tmp = np.copy(C[0])
         C[0] = A[self.n - 1]
         C[self.n - 1] = tmp
-        print(np.around(C, 2))
+        #print(np.around(C, 2))
 
         #Swap the 0tha nd n-1th column
         tmp = np.copy(C[:,0])
         C[:,0] = C[:, self.n - 1]
         C[:, self.n - 1] = tmp
         
-        print("Matrix A in Canonical Form:")
-        print(np.around(C, 2))
+        #print("Matrix A in Canonical Form:")
+        #print(np.around(C, 2))
 
         Q = C[0:self.n - 1, 0:self.n - 1]
         R = C[0:self.n - 1, self.n - 1:self.n + 1]
@@ -88,7 +95,7 @@ class Wright_Fisher(Model):
             for j in range(0, self.n + 1):
                 A[i,j] = self.P_ij(i, j, f, g)
 
-        print("Starting canonical form")
+        #print("Starting canonical form")
         self.canonical_form(A)
 
         return A
@@ -99,12 +106,12 @@ class Wright_Fisher(Model):
         for i in range(0, self.n + 1):
             i_pop = np.asarray([i, self.n-i])
             fit = self._fitness_no_pop_mult(i_pop)
-            print(fit)
+            #print(fit)
             if mode == "f":
                 f += [fit[0]]
             elif mode == "g":
                 f += [fit[1]]        
-        print(f)
+        #print(f)
         return f
 
 

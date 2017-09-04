@@ -33,8 +33,8 @@ for p_name, p in tests:
         #game = np.array([[2, 0],[3, 1]], dtype=np.float)
         parameters = {
             "game": game,
-            "w": 0.1,
-            "init_pop": np.array([3, 1], dtype=np.float)
+            "w": 1e-324,
+            "init_pop": np.array([4, 1], dtype=np.float)
         }
 
         if n % 100 == 0:
