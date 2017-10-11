@@ -32,9 +32,44 @@ class Moran(Model):
     def sum_prod(self, a, g):
         s = 0
         for k in range(1, int(a)+1): #(1, a-1) really
-            p = 1
+            p = np.longdouble(1)
+            numerators = []
+            denominators = []
             for j in range(1, k+1): #(1, k) really
-                p *= g[j]
+                #p *= g[j][0]
+                #p /= g[j][1]
+                numerators += [g[j][0]]
+                denominators += [g[j][1]]
+            numerators = sorted(numerators)
+            denominators = sorted(denominators)
+            i = 0
+            j = 0
+            while i < len(numerators) and j < len(denominators):
+                numerators_failed = False
+                old_i = i
+                old_j = j
+                while not numerators_failed:
+                    try:
+                        new_p = p * numerators[i]
+                        p = new_p
+                        i += 1
+                    except:
+                        numerators_failed = True
+                denominators_failed = False
+                while not denominators_failed:
+                    try:
+                        new_p = p / denominators[j]
+                        p = new_p
+                        j += 1
+                    except:
+                        denominators_failed = True
+                if i == old_i and j == old_j:
+                    # We have hit a loop and should stop
+                    raise ValueError
+            #for j, _ in enumerate(numerators):
+            #    p *= numerators[j]
+            #    p /= denominators[j]
+            #    #print(p)
             s += p
         return s
 
@@ -45,21 +80,22 @@ class Moran(Model):
         gammas = {}
 
         for num_invaders in range(1, int(self.n)):
-            num_others = self.n - num_invaders
+            num_others = np.longdouble(self.n - num_invaders)
             f = self._fitness([num_others, num_invaders])
 
             # The probability that, with x invaders in the population, we will lose an invader
             # - that is, the probability that we choose the non-invader (f[0]) to kill an invader (x / (self.n - 1))
-            pr_loss = f[0] * (num_invaders / self.n)
+            pr_loss = np.longdouble(f[0]) * np.longdouble(num_invaders / self.n)
 
             # The probability that, with x invaders in the population, we will lose a non-invader
             # - that is, the probability that we choose the invader (f[1]) to kill a non-invader ((n - x) / (self.n - 1))
-            pr_gain = f[1] * (num_others / self.n) #The probability that, with x invaders in the population, we will lose an invader
+            pr_gain = np.longdouble(f[1]) * np.longdouble(num_others / self.n) #The probability that, with x invaders in the population, we will lose an invader
 
             #print(f)
 
             #print(pr_loss)
             #print(pr_gain)
 
-            gammas[num_invaders] = pr_loss / pr_gain
+            gammas[num_invaders] = (pr_loss, pr_gain)
+            #gammas[num_invaders] = pr_loss / pr_gain
         return gammas

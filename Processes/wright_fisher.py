@@ -3,6 +3,8 @@ import random, math
 import numpy as np
 import scipy.special
 
+binom_dict = {}
+
 # https://www.math.leidenuniv.nl/scripties/CarsouwBach.pdf - seems partially incorrect, re expected time? Or am I misreading it?
 # http://www.stats.ox.ac.uk/~didelot/popgen/lecture2.pdf - seems correct
 class Wright_Fisher(Model):
@@ -116,12 +118,23 @@ class Wright_Fisher(Model):
 
 
     def P_ij(self, i, j, f, g):
-        binom = scipy.special.binom(self.n, j)
+        try:
+            binom = binom_dict[(self.n, j)]
+        except:
+            binom = scipy.special.binom(self.n, j)
+            binom_dict[(self.n, j)] = binom
+
+        #binom = scipy.special.binom(self.n, j)
+        
         denominator = i * f[i] + (self.n - i) * g[i]
         a = i * f[i] / denominator
         b = (self.n - i) * g[i] / denominator
 
         #print("A", a)
         #print("B", b)
-
-        return binom * np.power(a, j) * np.power(b, self.n - j)
+        try:
+            return binom * np.power(a, j) * np.power(b, self.n - j)
+        except FloatingPointError as e:
+            if "underflow" in str(e):
+                return 0
+            raise e

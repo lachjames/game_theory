@@ -3,6 +3,12 @@ import numpy as np
 from moran import Moran
 from wright_fisher import Wright_Fisher
 
+unit_test_game = np.asarray([
+    [3, 3, 2],
+    [2, 2, 2],
+    [2, 3, 3]
+])
+
 def r(x):
     return np.around(x, 3)
 
@@ -18,6 +24,7 @@ def main():
             #    [1, 1, 1.01]
             #]),
             "game": r_game,
+            #"game": unit_test_game,
             "w": 0.1,
             "model_type": Wright_Fisher,
             "initial_victor": 2,
@@ -30,7 +37,7 @@ def main():
     print("transition matrix:")
     print(np.around(transition_matrix, 3))
 
-    n = 10000
+    n = 5000
 
     results, scores = many.run(n / 5, n, 5)
     print(np.around(scores, 3))
@@ -38,7 +45,21 @@ def main():
     print("Predicted: {}; Actual: {}".format(r(prediction), r(normalize_dict(results))))
 
 def normalize(x):
-    return x / sum(x)
+    s = np.sum(x)
+    if s == 0:
+        return np.zeros_like(x)
+    else:
+        norm = np.zeros_like(x)
+        for i in range(len(x)):
+            try:
+                norm[i] = x[i] / s
+            except FloatingPointError as e:
+                if "underflow" in str(e):
+                    norm[i] = 0
+                    print("Caught underflow with x={}".format(x[i]))
+                else:
+                    raise e
+        return norm
 
 def normalize_dict(x):
     l = []
@@ -135,9 +156,17 @@ class Many:
                 
                 model = self.make_model(i, j)
                 #print("Invasion probability", model.invasion_probability())
-                pr = model.invasion_probability()
-                transition_matrix[i, j] = pr / self.num_types
-                transition_matrix[i, i] += (1 - pr) / self.num_types
+
+                try:
+                    pr = model.invasion_probability()
+                    transition_matrix[i, j] = pr / self.num_types
+                    transition_matrix[i, i] += (1 - pr) / self.num_types
+                except FloatingPointError as e:
+                    if "underflow" in str(e):
+                        transition_matrix[i, j] = 0
+                        transition_matrix[i, i] += 1.0 / self.num_types
+                    else:
+                        raise e
 
         #for i in range(self.num_types):
         #    transition_matrix[i] = normalize(transition_matrix[i])
@@ -146,22 +175,29 @@ class Many:
 
         prediction = None
 
+        #We take the eigenvalue closest to 1
+        min_eig = float("Inf")
         for i in range(len(w)):
-                if abs(w[i] - 1) < 1e-10:
-                    #print("Average States: ")
-                    prediction = normalize(v[:,i])
-                    #print(prediction)
-                #print("{} is the eigenvector corresponding to {}".format(v[:,i], w[i]))
-                #print("{}")
+            dist = abs(w[i] - 1)
+            if dist < min_eig:
+                min_eig = dist
+                #print("Average States: ")
+                prediction = normalize(v[:,i])
+                #print(prediction)
+            #print("{} is the eigenvector corresponding to {}".format(v[:,i], w[i]))
+            #print("{}")
 
         return transition_matrix, prediction
 
-def random_game(n, a, b):
+def random_game(n, a, b, integer = True):
     g = []
     for _ in range(n):
         r = []
         for _ in range(n):
-            r += [np.random.randint(a, b)]
+            if integer:
+                r += [np.random.randint(a, b)]
+            else:
+                r += [np.random.uniform(a, b)]
         g += [r]
     return np.asarray(g)
 

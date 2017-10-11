@@ -1,6 +1,8 @@
 import random, math
 import numpy as np
 
+np.seterr(over="raise", under="raise")
+
 class Model:
     def __init__(self, parameters):
         self.parameters = parameters
@@ -26,6 +28,8 @@ class Model:
             # We don't want to end up with a divide by zero error
             fitness = np.copy(f_pop) / self.n
             return fitness
+
+        #Handle overflows here!
         fitness = np.dot(self.game, f_pop) - np.diag(self.game)
         fitness = np.exp(self.w * fitness)
         fitness = np.multiply(f_pop, fitness)
