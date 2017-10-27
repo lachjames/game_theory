@@ -6,33 +6,33 @@ from moran_old import Moran_OLD
 
 import numpy as np
 
-num_tests = 1000
+num_tests = 500
 
 # example_moran = Moran(parameters)
 # print("Expected time: " + str(example_moran.expectation()))
 
-tests = ( ("Moran", Moran), ("Wright-Fisher", Wright_Fisher) )
+#tests = ( ("Moran", Moran), ("Wright-Fisher", Wright_Fisher) )
 #tests = ( ("Moran", Moran),)
 
-#tests = ( ("Wright-Fisher", Wright_Fisher), )
+tests = ( ("Wright-Fisher", Wright_Fisher), )
 
 #tests = ( ("Moran", Moran), ("Moran_OLD", Moran_OLD))
 
 def rand_game(i):
     return np.array(
         [
-            [random.randint(-i, i), random.randint(-i, i)],
-            [random.randint(-i, i), random.randint(-i, i)]
+            [random.randint(1, i), random.randint(1, i)],
+            [random.randint(1, i), random.randint(1, i)]
         ]
     )
 
-#game = rand_game(5)
-game = np.array(
-    [
-        [1, 1],
-        [4, -2]
-    ]
-)
+game = rand_game(5)
+# game = np.array(
+#     [
+#         [1, 1],
+#         [4, 2]
+#     ]
+# )
 
 for p_name, p in tests:
     results = [0, 0]
@@ -44,7 +44,7 @@ for p_name, p in tests:
         parameters = {
             "game": game,
             "w": 0.1,
-            "init_pop": np.array([9, 1], dtype=np.float)
+            "init_pop": np.array([29, 1], dtype=np.float)
         }
 
         if n % 100 == 0:

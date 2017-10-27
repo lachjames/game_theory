@@ -51,14 +51,15 @@ def normalize(x):
     else:
         norm = np.zeros_like(x)
         for i in range(len(x)):
-            try:
-                norm[i] = x[i] / s
-            except FloatingPointError as e:
-                if "underflow" in str(e):
-                    norm[i] = 0
-                    print("Caught underflow with x={}".format(x[i]))
-                else:
-                    raise e
+            # try:
+            #     norm[i] = x[i] / s
+            # except FloatingPointError as e:
+            #     if "underflow" in str(e):
+            #         norm[i] = 0
+            #         print("Caught underflow with x={}".format(x[i]))
+            #     else:
+            #         raise e
+            norm[i] = x[i] / s
         return norm
 
 def normalize_dict(x):
@@ -157,16 +158,20 @@ class Many:
                 model = self.make_model(i, j)
                 #print("Invasion probability", model.invasion_probability())
 
-                try:
-                    pr = model.invasion_probability()
-                    transition_matrix[i, j] = pr / self.num_types
-                    transition_matrix[i, i] += (1 - pr) / self.num_types
-                except FloatingPointError as e:
-                    if "underflow" in str(e):
-                        transition_matrix[i, j] = 0
-                        transition_matrix[i, i] += 1.0 / self.num_types
-                    else:
-                        raise e
+                # try:
+                #     pr = model.invasion_probability()
+                #     transition_matrix[i, j] = pr / self.num_types
+                #     transition_matrix[i, i] += (1 - pr) / self.num_types
+                # except FloatingPointError as e:
+                #     if "underflow" in str(e):
+                #         transition_matrix[i, j] = 0
+                #         transition_matrix[i, i] += 1.0 / self.num_types
+                #     else:
+                #         raise e
+
+                pr = model.invasion_probability()
+                transition_matrix[i, j] = pr / self.num_types
+                transition_matrix[i, i] += (1 - pr) / self.num_types
 
         #for i in range(self.num_types):
         #    transition_matrix[i] = normalize(transition_matrix[i])

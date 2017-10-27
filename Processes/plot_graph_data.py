@@ -55,7 +55,10 @@ for k in results.keys():
 
 print(key_proportions)
 
-f, axarr = plt.subplots(len(w_s), len(p_s))
+if len(w_s) == 1:
+    f, axarr = plt.subplots(len(p_s))
+else:
+    f, axarr = plt.subplots(len(w_s), len(p_s))
 
 for i, w in enumerate(sorted(w_s)):
     for j, p in enumerate(sorted(p_s)):
@@ -64,7 +67,11 @@ for i, w in enumerate(sorted(w_s)):
         for n in n_s:
             X += [n]
             Y += [key_proportions[(w, p, n)]]
-        axarr[i, j].plot(X, Y)
-        axarr[i, j].set_title("w={}, p={}".format(w, p))
+        print(X)
+        print(Y)
+        idx = (i, j) if len(w_s) > 1 else (j,)
+        axarr[idx].plot(X, Y)
+        axarr[idx].set_ylim([-0.1, 1.1])
+        axarr[idx].set_title("w={}, p={}".format(w, p))
 
 plt.show()

@@ -1,7 +1,7 @@
 from model import Model
 import random, math
 import numpy as np
-import scipy.special
+import scipy.stats, scipy.special
 
 binom_dict = {}
 
@@ -119,22 +119,40 @@ class Wright_Fisher(Model):
 
     def P_ij(self, i, j, f, g):
         try:
-            binom = binom_dict[(self.n, j)]
+           binom = binom_dict[(self.n, j)]
         except:
-            binom = scipy.special.binom(self.n, j)
-            binom_dict[(self.n, j)] = binom
+           binom = scipy.special.binom(self.n, j)
+           binom_dict[(self.n, j)] = binom
 
         #binom = scipy.special.binom(self.n, j)
         
         denominator = i * f[i] + (self.n - i) * g[i]
-        a = i * f[i] / denominator
-        b = (self.n - i) * g[i] / denominator
+        pr = i * f[i] / denominator
 
-        #print("A", a)
-        #print("B", b)
+        # if self.n * pr > 10 and self.n * (1 - pr) > 10:
+        #     #print("Using normal approximation")
+        #     # Normal approximation will be good enough here
+        #     mean = self.n * pr
+        #     var = self.n * pr * (1 - pr)
+        #
+        #     return scipy.stats.norm.cdf(j + 0.5, mean, var) - scipy.stats.norm.cdf(j - 0.5, mean, var)
+
+        #b = (self.n - i) * g[i] / denominator
+
         try:
-            return binom * np.power(a, j) * np.power(b, self.n - j)
+            #print("B: {}, P: {}, M: {}".format(binom, np.power(pr, j), np.power((1-pr), self.n - j)))
+            return binom * np.power(pr, j) * np.power((1-pr), self.n - j)
         except FloatingPointError as e:
             if "underflow" in str(e):
                 return 0
+            elif "overflow" in str(e):
+                print("ERROR AT: {} with B: {}, P: {}, Q: {}, pr: {}, 1-pr: {}".format(self.n, binom, np.power(pr, j), np.power((1-pr), self.n - j), pr, 1 - pr))
             raise e
+
+        # If pr doesn't work, we can use 1-pr and self.n - j
+
+        # x = scipy.stats.binom.pmf(j, self.n, pr)
+
+        print(x)
+
+        return x

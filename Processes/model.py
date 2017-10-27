@@ -23,7 +23,7 @@ class Model:
 
         return self.fitness
 
-    def _fitness(self, f_pop):
+    def _fitness(self, f_pop, exp=False):
         if self.w == 0:
             # We don't want to end up with a divide by zero error
             fitness = np.copy(f_pop) / self.n
@@ -31,19 +31,21 @@ class Model:
 
         #Handle overflows here!
         fitness = np.dot(self.game, f_pop) - np.diag(self.game)
-        fitness = np.exp(self.w * fitness)
+        if exp:
+            fitness = np.exp(self.w * fitness)
         fitness = np.multiply(f_pop, fitness)
         fitness = fitness / np.sum(fitness)
 
         return fitness
 
-    def _fitness_no_pop_mult(self, f_pop):
+    def _fitness_no_pop_mult(self, f_pop, exp=False):
         if self.w == 0:
             # We don't want to end up with a divide by zero error
             fitness = np.copy(f_pop) / self.n
             return fitness
         fitness = np.dot(self.game, f_pop) - np.diag(self.game)
-        fitness = np.exp(self.w * fitness)
+        if exp:
+            fitness = np.exp(self.w * fitness)
         fitness = fitness / np.sum(fitness)
 
         return fitness
