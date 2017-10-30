@@ -66,7 +66,7 @@ for i, w in enumerate(sorted(w_s)):
         Y = []
         for n in n_s:
             X += [n]
-            Y += [key_proportions[(w, p, n)]]
+            Y += [1 - key_proportions[(w, p, n)]]
         print(X)
         print(Y)
         idx = (i, j) if len(w_s) > 1 else (j,)
