@@ -1,7 +1,3 @@
-from many import Many, random_game, r
-from wright_fisher import Wright_Fisher
-from moran import Moran
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,22 +14,19 @@ data = json.loads(x)
 
 results = {}
 
-w_s = set()
 p_s = set()
 n_s = set()
 
 for test in data:
-    w = test["w"]
     p = test["p"]
     g = test["game"]
     n = test["n_strats"]
     rankings = test["rankings"]
     
-    w_s.add(w)
     p_s.add(p)
     n_s.add(n)
 
-    k = (w, p, n)
+    k = (p, n)
     if k not in results.keys():
         results[k] = []
     results[k] += [rankings]
@@ -45,7 +38,7 @@ for k in results.keys():
     for run in results[k]:
         orderings = set()
         for model_name, ordering in run.items():
-            orderings.add(tuple(ordering))
+             orderings.add(tuple(ordering))
         if len(orderings) == 1:
             matchings += 1
     
@@ -55,23 +48,35 @@ for k in results.keys():
 
 print(key_proportions)
 
-if len(w_s) == 1:
-    f, axarr = plt.subplots(len(p_s))
-else:
-    f, axarr = plt.subplots(len(w_s), len(p_s))
+#if len(w_s) == 1:
+#    f, axarr = plt.subplots(len(p_s))
+#else:
+#    f, axarr = plt.subplots(len(w_s), len(p_s))
 
-for i, w in enumerate(sorted(w_s)):
-    for j, p in enumerate(sorted(p_s)):
-        X = []
-        Y = []
-        for n in n_s:
-            X += [n]
-            Y += [1 - key_proportions[(w, p, n)]]
-        print(X)
-        print(Y)
-        idx = (i, j) if len(w_s) > 1 else (j,)
-        axarr[idx].plot(X, Y)
-        axarr[idx].set_ylim([-0.1, 1.1])
-        axarr[idx].set_title("w={}, p={}".format(w, p))
+plots = []
+
+for j, p in enumerate(sorted(p_s)):
+    X = []
+    Y = []
+    for n in n_s:
+        X += [n]
+        Y += [1 - key_proportions[(p, n)]]
+    print(X)
+    print(Y)
+    idx = tuple([j])
+    lbl = "n={}".format(p)
+    plots += plt.plot(X, Y, label=lbl)
+    x1, x2, y1, y2 = plt.axis()
+    plt.axis([x1, x2, -0.1, 1.1])
+    ax = plt.gca()
+    ax.set_xticks(np.arange(0, 10, 1))
+    ax.set_yticks(np.arange(0, 1, 0.1))
+    plt.grid()
+    #axarr[idx].plot(X, Y)
+    #axarr[idx].set_ylim([-0.1, 1.1])
+
+print(plots)
+
+plt.legend(handles=plots)
 
 plt.show()

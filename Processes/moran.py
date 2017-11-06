@@ -1,14 +1,15 @@
-from model import Model
-import random, math
 import numpy as np
 
+import dynamics
+
+
 # http://www.stats.ox.ac.uk/~didelot/popgen/lecture3.pdf
-class Moran(Model):
+class Moran(dynamics.Dynamics):
     def step(self):
         self.calculate_fitness()
 
         a = self.select()
-        
+
         proportions = self.population / np.sum(self.population)
         b = np.random.choice(range(len(self.population)), size=1, replace=False, p=proportions)
 
@@ -20,24 +21,24 @@ class Moran(Model):
     def invasion_probability(self):
         i = self.population[1]
         g = self.gammas()
-        #print(g)
-        s1 = self.sum_prod(i-1, g)
+        # print(g)
+        s1 = self.sum_prod(i - 1, g)
         s2 = self.sum_prod(int(self.n) - 1, g)
 
-        #print("S1: ", s1)
-        #print("S2: ", s2)
+        # print("S1: ", s1)
+        # print("S2: ", s2)
 
-        return (1 + s1)/(1 + s2)
+        return (1 + s1) / (1 + s2)
 
     def sum_prod(self, a, g):
         s = 0
-        for k in range(1, int(a)+1): #(1, a-1) really
+        for k in range(1, int(a) + 1):  # (1, a-1) really
             p = np.longdouble(1)
             numerators = []
             denominators = []
-            for j in range(1, k+1): #(1, k) really
-                #p *= g[j][0]
-                #p /= g[j][1]
+            for j in range(1, k + 1):  # (1, k) really
+                # p *= g[j][0]
+                # p /= g[j][1]
                 numerators += [g[j][0]]
                 denominators += [g[j][1]]
             numerators = sorted(numerators)
@@ -66,7 +67,7 @@ class Moran(Model):
                 if i == old_i and j == old_j:
                     # We have hit a loop and should stop
                     raise ValueError
-            #for j, _ in enumerate(numerators):
+            # for j, _ in enumerate(numerators):
             #    p *= numerators[j]
             #    p /= denominators[j]
             #    #print(p)
@@ -89,13 +90,14 @@ class Moran(Model):
 
             # The probability that, with x invaders in the population, we will lose a non-invader
             # - that is, the probability that we choose the invader (f[1]) to kill a non-invader ((n - x) / (self.n - 1))
-            pr_gain = np.longdouble(f[1]) * np.longdouble(num_others / self.n) #The probability that, with x invaders in the population, we will lose an invader
+            pr_gain = np.longdouble(f[1]) * np.longdouble(
+                num_others / self.n)  # The probability that, with x invaders in the population, we will lose an invader
 
-            #print(f)
+            # print(f)
 
-            #print(pr_loss)
-            #print(pr_gain)
+            # print(pr_loss)
+            # print(pr_gain)
 
             gammas[num_invaders] = (pr_loss, pr_gain)
-            #gammas[num_invaders] = pr_loss / pr_gain
+            # gammas[num_invaders] = pr_loss / pr_gain
         return gammas
